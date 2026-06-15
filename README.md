@@ -1,17 +1,15 @@
 # ECG Arrhythmia Detection
 
-This was a two-person group project aimed at classifying ECG heartbeats as normal or abnormal using the MIT-BIH Arrhythmia Database from PhysioNet. 
-
-My partner focused on data preprocessing and exploratory data analysis, while I was responsible for the machine learning and deep learning aspects of the project.
+This was a two-person group project aimed at classifying ECG heartbeats as normal or abnormal using the MIT-BIH Arrhythmia Database from PhysioNet. Both of us collaborated on the data preprocessing pipeline and the machine learning model development.
 
 ## Division of Labor
 
-- **Data Preprocessing and EDA (Partner)**: Handled raw MIT-BIH signal loading using the `wfdb` library, segmented heartbeats around the R-peak annotations (360-sample windows), mapped AAMI symbols to binary labels, and analyzed dataset distributions.
-- **Machine Learning and Deep Learning (My Role)**: 
-  - Extracted handcrafted statistical features (mean, standard deviation, min, max, energy) and trained Logistic Regression and Random Forest baseline models.
-  - Designed and implemented the 1D Convolutional Neural Network (CNN) architecture in PyTorch for direct classification of raw signals.
-  - Built the CNN training pipeline, incorporating class-weighted loss to handle dataset imbalance, Z-score normalization, and validation loss-based checkpointing.
-  - Developed evaluation metrics and plots, including confusion matrices and ROC/Precision-Recall curves.
+- **Data Preprocessing and EDA**:
+  - **Partner**: Set up raw data loading using the `wfdb` library and mapped the AAMI beat symbols.
+  - **My Role**: Segmented heartbeats into 360-sample windows centered on R-peaks, implemented Z-score normalization, and generated visualization plots for the data analysis.
+- **Machine Learning and Deep Learning**:
+  - **Partner**: Extracted handcrafted statistical features (mean, standard deviation, min, max, energy) and trained the baseline Logistic Regression and Random Forest models.
+  - **My Role**: Designed the 1D CNN architecture in PyTorch, built the training pipeline (incorporating class-weighted loss to handle dataset imbalance and validation checkpointing), and created the evaluation metrics and demo script.
 
 ## Project Files
 
