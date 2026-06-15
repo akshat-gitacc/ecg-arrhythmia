@@ -1,13 +1,15 @@
 # ECG Arrhythmia Detection
 
-This was a two-person group project aimed at classifying ECG heartbeats as normal or abnormal using the MIT-BIH Arrhythmia Database from PhysioNet. 
+This was a two-person group project aimed at classifying ECG heartbeats as normal or abnormal using the MIT-BIH Arrhythmia Database from PhysioNet.
 
 My contributions to the project included:
-- Segmented raw ECG signals into 360-sample heartbeat windows centered on R-peaks and implemented Z-score normalization.
-- Generated visual plots for data analysis, including class distributions and sample signals.
-- Designed and implemented the 1D Convolutional Neural Network (CNN) architecture in PyTorch.
-- Built the CNN training pipeline, incorporating class-weighted loss to handle dataset imbalance and validation loss-based checkpointing.
-- Created the evaluation and inference demo script to plot performance curves and confusion matrices.
+
+Built the ECG preprocessing pipeline using the WFDB library to load and parse MIT-BIH signal and annotation files.
+Segmented raw ECG recordings into 360-sample heartbeat windows centered around annotated R-peaks.
+Implemented binary label mapping and class handling logic for normal versus abnormal heartbeat classification.
+Performed exploratory data analysis and generated visualizations including class distributions and ECG signal plots.
+Engineered statistical features from ECG signals for classical machine learning approaches.
+Developed and benchmarked Logistic Regression and Random Forest baseline models for comparison against the CNN architecture.
 
 ## Project Files
 
