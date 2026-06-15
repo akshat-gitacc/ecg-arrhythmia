@@ -16,17 +16,17 @@ from src.data.label_utils import convert_to_binary
 
 
 def main():
-    # ── Paths ──
+    #Paths
     PROCESSED_DIR = os.path.join("data", "processed")
     FIG_DIR = os.path.join("results", "figures")
     os.makedirs(FIG_DIR, exist_ok=True)
 
-    # ── 1. Load raw data ──
+    # 1. Load raw data 
     print("Loading data...")
     X = np.load(os.path.join(PROCESSED_DIR, "X.npy"))
     y_raw = np.load(os.path.join(PROCESSED_DIR, "y.npy"))
 
-    # ── 2. Binary label conversion (centralized) ──
+    # 2. Binary label conversion (centralized) 
     y = convert_to_binary(y_raw)
 
     print(f"X shape: {X.shape}")
@@ -35,7 +35,7 @@ def main():
     for label, count in Counter(y).items():
         print(f"  {label}: {count}")
 
-    # ── 3. Hand-crafted features ──
+    # 3. Engineered Features 
     def extract_features(beats):
         mean = beats.mean(axis=1)
         std = beats.std(axis=1)
@@ -48,7 +48,7 @@ def main():
     X_feat = extract_features(X)
     print(f"Feature matrix shape: {X_feat.shape}")
 
-    # ── 4. Train / Validation / Test split (70/15/15) ──
+    # 4. Train / Validation / Test split (70/15/15) 
     X_train, X_temp, y_train, y_temp = train_test_split(
         X_feat, y, test_size=0.3, random_state=42, stratify=y
     )
@@ -58,13 +58,13 @@ def main():
 
     print(f"Split sizes → Train: {len(y_train)}, Val: {len(y_val)}, Test: {len(y_test)}")
 
-    # ── 5. Feature scaling ──
+    # 5. Feature scaling 
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_val_scaled = scaler.transform(X_val)
     X_test_scaled = scaler.transform(X_test)
 
-    # ── Helper: evaluate, interpret, and visualize ──
+    # Helper: evaluate, interpret, and visualize 
     def evaluate_model(name, y_true, y_pred, y_prob, fig_prefix):
         target_names = ["Normal", "Abnormal"]
 
@@ -85,7 +85,7 @@ def main():
         print(cm)
         print(f"\n  True Negatives  (Normal → Normal):    {tn}")
         print(f"  False Positives (Normal → Abnormal):   {fp}")
-        print(f"  False Negatives (Abnormal → Normal):   {fn}  ⚠️  CRITICAL in medical ML")
+        print(f"  False Negatives (Abnormal → Normal):   {fn}")
         print(f"  True Positives  (Abnormal → Abnormal): {tp}")
         print("=" * 55)
 
@@ -102,7 +102,7 @@ def main():
         plt.close()
         print(f"  Heatmap saved → {cm_path}")
 
-    # ── 6. Logistic Regression (with class_weight) ──
+    # 6. Logistic Regression (with class_weight) 
     print("\nTraining Logistic Regression...")
     log_reg = LogisticRegression(max_iter=1000, class_weight="balanced")
     log_reg.fit(X_train_scaled, y_train)
@@ -117,7 +117,7 @@ def main():
     y_prob_lr = log_reg.predict_proba(X_test_scaled)[:, 1]
     evaluate_model("LOGISTIC REGRESSION (TEST)", y_test, y_pred_lr, y_prob_lr, "logreg")
 
-    # ── 7. Random Forest (with class_weight) ──
+    # 7. Random Forest (with class_weight) 
     print("\nTraining Random Forest...")
     rf = RandomForestClassifier(
         n_estimators=100,

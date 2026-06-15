@@ -12,7 +12,6 @@ demo_cnn.py - Complete demo script for ECG arrhythmia detection.
 import sys
 import os
 
-# Ensure project root is on path (so imports work from any run method)
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
@@ -34,13 +33,13 @@ from src.data.label_utils import convert_to_binary
 
 
 def demo():
-    # ── Paths ──
+    # Paths 
     PROCESSED_DIR = os.path.join(PROJECT_ROOT, "data", "processed")
     MODEL_PATH = os.path.join(PROJECT_ROOT, "results", "models", "best_cnn.pth")
     FIG_DIR = os.path.join(PROJECT_ROOT, "results", "figures")
     os.makedirs(FIG_DIR, exist_ok=True)
 
-    # ── 1. Verify model exists ──
+    # 1. Verify model exists 
     if not os.path.exists(MODEL_PATH):
         print("=" * 55)
         print("    No pre-trained model found!")
@@ -51,7 +50,7 @@ def demo():
         print("=" * 55)
         return
 
-    # ── 2. Load data ──
+    # 2. Load data 
     print("=" * 55)
     print("   ECG Arrhythmia Detection - CNN Demo")
     print("=" * 55)
@@ -70,7 +69,7 @@ def demo():
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-    # Normal beat (raw, before normalization, for visual clarity)
+    # Normal beat (raw)
     normal_idx = np.where(y == 0)[0]
     axes[0].plot(X_raw[normal_idx[0]], color="#2196F3", linewidth=1.5)
     axes[0].set_title("Normal Beat (Class 0)", fontsize=14, fontweight="bold")
@@ -92,7 +91,7 @@ def demo():
     ecg_path = os.path.join(FIG_DIR, "demo_ecg_samples.png")
     plt.savefig(ecg_path, dpi=150)
     plt.close()
-    print(f"   ✓ Saved → {ecg_path}")
+    print(f"   Saved → {ecg_path}")
 
     # Single beat plot (for Step 2 talking point)
     plt.figure(figsize=(10, 5))
@@ -105,9 +104,9 @@ def demo():
     single_path = os.path.join(FIG_DIR, "demo_single_beat.png")
     plt.savefig(single_path, dpi=150)
     plt.close()
-    print(f"   ✓ Saved → {single_path}")
+    print(f"   Saved → {single_path}")
 
-    # ── 3.1 Data Analysis: Class Distribution ──
+    # 3.1 Data Analysis: Class Distribution 
     print("\n Analyzing class distribution...")
     plt.figure(figsize=(8, 5))
     counts = [(y == 0).sum(), (y == 1).sum()]
@@ -121,9 +120,9 @@ def demo():
     dist_path = os.path.join(FIG_DIR, "cnn_class_distribution.png")
     plt.savefig(dist_path, dpi=150)
     plt.close()
-    print(f"   ✓ Saved → {dist_path}")
+    print(f"   Saved → {dist_path}")
 
-    # ── 3.2 Signal Statistics (Data Analysis) ──
+    # 3.2 Signal Statistics (Data Analysis) 
     print(" Calculating signal statistics...")
     means = X_raw.mean(axis=1)
     stds = X_raw.std(axis=1)
@@ -141,9 +140,9 @@ def demo():
     stats_path = os.path.join(FIG_DIR, "cnn_signal_statistics.png")
     plt.savefig(stats_path, dpi=150)
     plt.close()
-    print(f"   ✓ Saved → {stats_path}")
+    print(f"   Saved → {stats_path}")
 
-    # ── 4. Preprocessing: Normalization Comparison ──
+    # 4. Preprocessing: Normalization Comparison 
     print("\n Preprocessing (Normalization)...")
     X = (X_raw - X_raw.mean()) / X_raw.std()
     
@@ -164,25 +163,25 @@ def demo():
     norm_path = os.path.join(FIG_DIR, "demo_preprocessing_comparison.png")
     plt.savefig(norm_path, dpi=150)
     plt.close()
-    print(f"   ✓ Saved → {norm_path}")
+    print(f"   Saved → {norm_path}")
 
-    # ── 5. Load pre-trained model ──
+    # 5. Load pre-trained model 
     print(f"\n Loading pre-trained model...")
-    device = torch.device("cpu")  # CPU for demo reliability
+    device = torch.device("cpu")  
     model = ECGCNN(num_classes=2)
     model.load_state_dict(torch.load(MODEL_PATH, map_location=device, weights_only=True))
     model.eval()
-    print("   ✓ Model loaded successfully")
+    print("   Model loaded successfully")
     print(f"   Parameters: {sum(p.numel() for p in model.parameters()):,}")
 
-    # ── 6. Run inference (full dataset for accurate metrics) ──
+    # 6. Run inference 
     DEMO_SIZE = min(2000, len(X))
     X_sample = X[:DEMO_SIZE]
     y_sample = y[:DEMO_SIZE]
 
     X_tensor = torch.tensor(X_sample, dtype=torch.float32)
 
-    print(f"\n⚡ Running inference on {DEMO_SIZE} beats...")
+    print(f"\n Running inference on {DEMO_SIZE} beats...")
     with torch.no_grad():
         outputs = model(X_tensor)
         probs = torch.softmax(outputs, dim=1)
@@ -192,7 +191,7 @@ def demo():
     probs_np = probs[:, 1].numpy()
     target_names = ["Normal (N)", "Abnormal"]
 
-    # ── 7. Classification report (Step 5 of demo) ──
+    # 7. Classification report 
     print("\n" + "=" * 55)
     print("   CLASSIFICATION REPORT")
     print("=" * 55)
@@ -202,7 +201,7 @@ def demo():
     roc_auc = roc_auc_score(y_sample, probs_np)
     print(f"   ROC-AUC Score: {roc_auc:.4f}")
 
-    # ── 8. ROC and PR Curves ──
+    # 8. ROC and PR Curves 
     print("\n Generating ROC and Precision-Recall curves...")
     fpr, tpr, _ = roc_curve(y_sample, probs_np)
     precision, recall, _ = precision_recall_curve(y_sample, probs_np)
@@ -231,9 +230,9 @@ def demo():
     curve_path = os.path.join(FIG_DIR, "cnn_performance_curves.png")
     plt.savefig(curve_path, dpi=150)
     plt.close()
-    print(f"   ✓ Saved → {curve_path}")
+    print(f"   Saved → {curve_path}")
 
-    # ── 8.1 Probability Distribution ──
+    # 8.1 Probability Distribution 
     plt.figure(figsize=(10, 5))
     sns.histplot(probs_np[y_sample == 0], bins=30, color="#2196F3", label="Actual Normal", kde=True, alpha=0.5)
     sns.histplot(probs_np[y_sample == 1], bins=30, color="#F44336", label="Actual Abnormal", kde=True, alpha=0.5)
@@ -244,22 +243,22 @@ def demo():
     prob_path = os.path.join(FIG_DIR, "cnn_prob_distribution.png")
     plt.savefig(prob_path, dpi=150)
     plt.close()
-    print(f"   ✓ Saved → {prob_path}")
+    print(f"   Saved → {prob_path}")
 
-    # ── 8. Confusion matrix with interpretation ──
+    # 8. Confusion matrix with interpretation 
     cm = confusion_matrix(y_sample, preds_np)
     tn, fp, fn, tp = cm.ravel()
 
     print("\n" + "-" * 55)
     print("  Confusion Matrix Breakdown:")
     print("-" * 55)
-    print(f"  True Negatives  (Normal → Normal):    {tn}")
-    print(f"  False Positives (Normal → Abnormal):   {fp}")
-    print(f"  False Negatives (Abnormal → Normal):   {fn}  ⚠️  CRITICAL")
-    print(f"  True Positives  (Abnormal → Abnormal): {tp}")
+    print(f"  True Negatives  (Normal -> Normal):    {tn}")
+    print(f"  False Positives (Normal -> Abnormal):   {fp}")
+    print(f"  False Negatives (Abnormal -> Normal):   {fn}")
+    print(f"  True Positives  (Abnormal -> Abnormal): {tp}")
     print("=" * 55)
 
-    # ── 9. Confusion matrix heatmap (Step 6 of demo) ──
+    # 9. Confusion matrix heatmap 
     print("\n Generating confusion matrix heatmap...")
     plt.figure(figsize=(7, 5.5))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
@@ -272,9 +271,9 @@ def demo():
     cm_path = os.path.join(FIG_DIR, "cnn_confusion_matrix.png")
     plt.savefig(cm_path, dpi=150)
     plt.close()
-    print(f"   ✓ Saved → {cm_path}")
+    print(f"   Saved → {cm_path}")
 
-    # ── 9.1 Prediction Grid (Step 7 of demo) ──
+    # 9.1 Prediction Grid 
     print("\n Generating prediction sample grid...")
     plt.figure(figsize=(12, 12))
     indices = random.sample(range(len(y_sample)), 9)
@@ -295,16 +294,16 @@ def demo():
     grid_path = os.path.join(FIG_DIR, "demo_prediction_grid.png")
     plt.savefig(grid_path, dpi=150)
     plt.close()
-    print(f"   ✓ Saved → {grid_path}")
+    print(f"   Saved → {grid_path}")
 
-    # ── 10. Check if loss curve exists (from training) ──
+    # 10. Check if loss curve exists (from training)
     loss_curve_path = os.path.join(FIG_DIR, "cnn_loss_curve.png")
     if os.path.exists(loss_curve_path):
-        print(f"   ✓ Loss curve already exists → {loss_curve_path}")
+        print(f"   Loss curve already exists → {loss_curve_path}")
     else:
         print(f"     Loss curve not found (run full training to generate)")
 
-    # ── Summary ──
+    # Summary
     print("\n" + "=" * 55)
     print("   DEMO COMPLETE")
     print("=" * 55)

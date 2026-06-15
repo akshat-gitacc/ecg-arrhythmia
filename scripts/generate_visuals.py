@@ -7,21 +7,18 @@ def run_script(script_path, args=None):
     if args:
         cmd.extend(args)
     
-    print(f"\n🚀 Running: {' '.join(cmd)}")
-    # Use subprocess.run with check=True to catch failures immediately
+    print(f"\n Running: {' '.join(cmd)}")
     try:
         result = subprocess.run(cmd, capture_output=False, text=True, check=True)
-        print(f"✅ Completed: {script_path}")
+        print(f"Completed: {script_path}")
         return 0
     except subprocess.CalledProcessError as e:
-        print(f"❌ Failed: {script_path} (Exit code: {e.returncode})")
+        print(f"Failed: {script_path} (Exit code: {e.returncode})")
         return e.returncode
 
 def main():
     root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     os.chdir(root)
-    
-    # Check if data exists
     if not os.path.exists("data/processed/X.npy"):
         print("Preprocessing data first...")
         run_script("src/data/preprocess.py", ["-m"])
@@ -31,19 +28,17 @@ def main():
     run_script("src/data/analyze.py", ["-m"])
     
     # 2. Generate Model Performance Visuals (Confusion Matrix, Loss Curve)
-    # Note: We run the demo script if a model exists, because full train takes a while.
     if os.path.exists("results/models/best_cnn.pth"):
         print("\n[2/3] Generating Model Performance Visuals (from existing best model)...")
         run_script("src/train/demo_cnn.py")
     else:
         print("\n[2/3] No best_cnn.pth found. Running brief training to generate visuals...")
-        # (Technically we should run train_cnn, but let's assume demo is preferred if model exists)
         run_script("src/train/train_cnn.py", ["-m"])
     
     # Summary
     fig_dir = "results/figures"
     print("\n" + "="*50)
-    print("✨ ALL VISUALS GENERATED")
+    print("ALL VISUALS GENERATED")
     print("="*50)
     print(f"Location: {os.path.abspath(fig_dir)}")
     files = os.listdir(fig_dir)

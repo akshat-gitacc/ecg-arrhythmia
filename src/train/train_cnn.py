@@ -17,14 +17,14 @@ from src.data.label_utils import convert_to_binary
 
 
 def train():
-    # ── Paths ──
+    # Paths
     PROCESSED_DIR = os.path.join("data", "processed")
     MODEL_DIR = os.path.join("results", "models")
     FIG_DIR = os.path.join("results", "figures")
     os.makedirs(MODEL_DIR, exist_ok=True)
     os.makedirs(FIG_DIR, exist_ok=True)
 
-    # ── 1. Load raw data ──
+    # 1. Load raw data 
     print("Loading data...")
     X = np.load(os.path.join(PROCESSED_DIR, "X.npy"))
     y_raw = np.load(os.path.join(PROCESSED_DIR, "y.npy"))
@@ -32,21 +32,20 @@ def train():
     print(f"Raw X shape: {X.shape}")
     print(f"Raw y shape: {y_raw.shape}")
 
-    # ── 2. Binary label conversion (centralized) ──
+    # 2. Binary label conversion (centralized) 
     y = convert_to_binary(y_raw)
     num_classes = 2
     class_map = {0: "Normal (N)", 1: "Abnormal"}
     print(f"Classes: {class_map}")
     print(f"Distribution → Normal: {(y == 0).sum()}, Abnormal: {(y == 1).sum()}")
 
-    # ── 3. Normalize ECG signals (z-score) ──
-    # ECG amplitude varies across patients; without this the CNN is unstable
+    # 3. Normalize ECG signals (z-score) 
     mean = X.mean()
     std = X.std()
     X = (X - mean) / std
     print(f"Normalized X - mean: {X.mean():.4f}, std: {X.std():.4f}")
 
-    # ── 4. Train / Validation / Test split (70/15/15) ──
+    # 4. Train / Validation / Test split (70/15/15) 
     X_train, X_temp, y_train, y_temp = train_test_split(
         X, y, test_size=0.3, random_state=42, stratify=y
     )
@@ -56,7 +55,7 @@ def train():
 
     print(f"\nSplit sizes → Train: {len(y_train)}, Val: {len(y_val)}, Test: {len(y_test)}")
 
-    # ── 5. PyTorch tensors & loaders ──
+    # 5. PyTorch tensors & loaders 
     X_train_t = torch.tensor(X_train, dtype=torch.float32)
     y_train_t = torch.tensor(y_train, dtype=torch.long)
     X_val_t = torch.tensor(X_val, dtype=torch.float32)
@@ -73,7 +72,7 @@ def train():
     test_loader = DataLoader(TensorDataset(X_test_t, y_test_t),
                              batch_size=BATCH_SIZE, shuffle=False)
 
-    # ── 6. Device ──
+    # 6. Device 
     device = torch.device(
         "cuda" if torch.cuda.is_available()
         else "mps" if torch.backends.mps.is_available()
@@ -81,7 +80,7 @@ def train():
     )
     print(f"Using device: {device}")
 
-    # ── 7. Class weights (handles imbalance) ──
+    # 7. Class weights 
     class_weights = compute_class_weight(
         class_weight='balanced',
         classes=np.unique(y_train),
@@ -90,12 +89,12 @@ def train():
     class_weights_t = torch.tensor(class_weights, dtype=torch.float32).to(device)
     print(f"Class weights: {dict(zip(class_map.values(), class_weights))}")
 
-    # ── 8. Model, loss, optimizer ──
+    # 8. Model, loss, optimizer
     model = ECGCNN(num_classes=num_classes).to(device)
     criterion = nn.CrossEntropyLoss(weight=class_weights_t)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-    # ── 9. Training loop - save BEST model, not last ──
+    # 9. Training loop 
     NUM_EPOCHS = 20
     train_losses = []
     val_losses = []
@@ -106,7 +105,7 @@ def train():
     print("-" * 55)
 
     for epoch in range(NUM_EPOCHS):
-        # - Train phase -
+        # Train phase 
         model.train()
         running_loss = 0.0
         for inputs, targets in train_loader:
@@ -123,7 +122,7 @@ def train():
         avg_train_loss = running_loss / len(train_loader)
         train_losses.append(avg_train_loss)
 
-        # - Validation phase -
+        # Validation phase 
         model.eval()
         val_loss = 0.0
         with torch.no_grad():
@@ -136,7 +135,7 @@ def train():
         avg_val_loss = val_loss / len(val_loader)
         val_losses.append(avg_val_loss)
 
-        # - Save best model checkpoint -
+        # Save best model checkpoint 
         saved_tag = ""
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
@@ -149,12 +148,12 @@ def train():
 
     print("-" * 55)
 
-    # ── 10. Load best model for evaluation ──
+    # 10. Load best model for evaluation 
     print(f"\nLoading best model (val_loss={best_val_loss:.4f})...")
     model.load_state_dict(torch.load(best_model_path, weights_only=True))
     model.eval()
 
-    # ── 11. Evaluation on TEST set ──
+    # 11. Evaluation on TEST set 
     print("Evaluating on held-out TEST set...")
     all_preds = []
     all_targets = []
@@ -180,11 +179,11 @@ def train():
     print("=" * 55)
     print(classification_report(all_targets, all_preds, target_names=target_names))
 
-    # ── 12. ROC-AUC (threshold-independent) ──
+    # 12. ROC-AUC (threshold-independent) 
     roc_auc = roc_auc_score(all_targets, all_probs)
     print(f"  ROC-AUC Score: {roc_auc:.4f}")
 
-    # ── 13. Confusion matrix with interpretation ──
+    # 13. Confusion matrix with interpretation 
     cm = confusion_matrix(all_targets, all_preds)
     tn, fp, fn, tp = cm.ravel()
 
@@ -192,11 +191,11 @@ def train():
     print(cm)
     print(f"\n  True Negatives  (Normal → Normal):    {tn}")
     print(f"  False Positives (Normal → Abnormal):   {fp}")
-    print(f"  False Negatives (Abnormal → Normal):   {fn}  ⚠️  CRITICAL in medical ML")
+    print(f"  False Negatives (Abnormal → Normal):   {fn}")
     print(f"  True Positives  (Abnormal → Abnormal): {tp}")
     print("=" * 55)
 
-    # ── 14. Confusion matrix heatmap ──
+    # 14. Confusion matrix heatmap 
     plt.figure(figsize=(6, 5))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
                 xticklabels=target_names, yticklabels=target_names)
@@ -209,7 +208,7 @@ def train():
     plt.close()
     print(f"\nConfusion matrix heatmap saved → {cm_path}")
 
-    # ── 15. Loss curve plot ──
+    # 15. Loss curve plot 
     plt.figure(figsize=(8, 5))
     epochs_range = range(1, NUM_EPOCHS + 1)
     plt.plot(epochs_range, train_losses, label="Train Loss", linewidth=2)
@@ -225,15 +224,15 @@ def train():
     plt.close()
     print(f"Loss curve saved → {loss_path}")
 
-    # ── 16. Loss trajectory summary ──
+    # 16. Loss trajectory summary 
     print("\nLoss Trajectory:")
     print(f"  Train - start: {train_losses[0]:.4f}, end: {train_losses[-1]:.4f}")
     print(f"  Val   - start: {val_losses[0]:.4f}, end: {val_losses[-1]:.4f}")
 
     if val_losses[-1] > val_losses[-3]:
-        print("  ⚠️  Validation loss increased in last epochs - potential overfitting")
+        print(" Validation loss increased in last epochs - potential overfitting")
     else:
-        print("  ✓  Validation loss is stable or decreasing")
+        print(" Validation loss is stable or decreasing")
 
     print(f"\nBest model saved → {best_model_path}")
 
