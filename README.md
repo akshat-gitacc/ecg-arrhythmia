@@ -19,34 +19,6 @@ Developed and benchmarked Logistic Regression and Random Forest baseline models 
 - `src/train/train_cnn.py`: Training script for the PyTorch CNN (handles data splits, class weights, and checkpointing).
 - `src/train/demo_cnn.py`: A quick demo script to visualize sample beats and run inference using the trained CNN model.
 
-## Setup and Running
-
-1. **Install dependencies**:
-   ```bash
-   pip install torch numpy scikit-learn wfdb matplotlib seaborn
-   ```
-
-2. **Preprocess the data**:
-   Download the MIT-BIH database files (.dat, .hea, .atr) and place them in `data/raw/mit-bih/`. Then run:
-   ```bash
-   python -m src.data.preprocess
-   ```
-
-3. **Train the CNN**:
-   ```bash
-   python -m src.train.train_cnn
-   ```
-
-4. **Run baseline models**:
-   ```bash
-   python -m src.models.classical_ml
-   ```
-
-5. **Run the demo**:
-   ```bash
-   python src/train/demo_cnn.py
-   ```
-
 ## Results
 
 I split the data into 70% training, 15% validation, and 15% testing sets. Here is how the models compared on the test set:
