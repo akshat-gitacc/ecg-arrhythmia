@@ -27,7 +27,7 @@ I split the data into 70% training, 15% validation, and 15% testing sets. Here i
 - **Random Forest**: 88% accuracy.
 - **1D CNN**: 99.6% accuracy (F1-score of 0.99 for abnormal beats).
 
-The CNN performs significantly better because it learns features directly from the raw heartbeat shape rather than relying on simple statistical aggregates.
+The CNN consistently outperformed the classical machine learning baselines because it learned discriminative features directly from the raw ECG waveform instead of relying on handcrafted statistical features. However, the improvement comes at the cost of higher computational requirements and reduced interpretability.
 
 
 
